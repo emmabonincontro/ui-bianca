@@ -9,13 +9,571 @@
     <meta property="og:description" content="Applicazione mobile wireframe in bianco e nero in formato iPhone 13 mini con due pagine collegate dai pulsanti avanti e indietro." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts for crisp wireframe typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN for static standalone execution without build tools -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+              mono: ['"Space Mono"', 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      }
+      .font-mono-tech {
+        font-family: 'Space Mono', monospace;
+      }
+      /* Wireframe blueprint paper background */
+      .wireframe-grid {
+        background-size: 24px 24px;
+        background-image: 
+          linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+      }
+      /* Smooth horizontal sliding transitions between pages */
+      .page-container {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+      }
+      .page-active {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+      }
+      .page-hidden-left {
+        transform: translateX(-100%);
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+      }
+      .page-hidden-right {
+        transform: translateX(100%);
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+      }
+    </style>
   </head>
-  <body class="bg-neutral-100 text-black antialiased selection:bg-black selection:text-white">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body class="bg-neutral-100 text-black antialiased selection:bg-black selection:text-white min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- Studio Header Toolbar (Wireframe inspection & controls) -->
+    <header class="w-full bg-white border-b-2 border-black px-4 py-3 shrink-0 select-none z-40">
+      <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+        <!-- Brand / Spec Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 border-2 border-black bg-black flex items-center justify-center text-white font-mono font-bold text-sm">
+            W
+          </div>
+          <div>
+            <h1 class="text-sm font-bold font-mono tracking-tight text-black flex items-center gap-2">
+              <span>WIREFRAME PROTOTYPE</span>
+              <span class="text-[10px] font-normal border border-black px-1.5 py-0.5 rounded-none bg-neutral-100">
+                iPhone 13 mini
+              </span>
+            </h1>
+            <p class="text-[11px] font-mono text-neutral-600">
+              Formato: 375 × 812 pt · B&amp;W Wireframe
+            </p>
+          </div>
+        </div>
+
+        <!-- Center: Direct Page Selector Tabs -->
+        <div class="flex items-center gap-1 bg-neutral-100 p-1 border-2 border-black">
+          <button
+            type="button"
+            id="tab-page-1"
+            onclick="goToPage(1)"
+            class="px-3 py-1 text-xs font-mono font-bold transition-colors cursor-pointer bg-black text-white"
+          >
+            Pagina 1 (avanti)
+          </button>
+          <button
+            type="button"
+            id="tab-page-2"
+            onclick="goToPage(2)"
+            class="px-3 py-1 text-xs font-mono font-bold transition-colors cursor-pointer text-black hover:bg-neutral-200"
+          >
+            Pagina 2 (indietro)
+          </button>
+        </div>
+
+        <!-- Right: Utility Controls -->
+        <div class="flex items-center gap-2">
+          <!-- Guide Toggle -->
+          <button
+            type="button"
+            id="btn-toggle-guides"
+            onclick="toggleGuides()"
+            title="Mostra / Nascondi guide di allineamento"
+            class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono border-2 border-black bg-white text-black hover:bg-neutral-100 transition-all cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+            <span class="hidden sm:inline">Guide</span>
+          </button>
+
+          <!-- Audio Toggle -->
+          <button
+            type="button"
+            id="btn-toggle-sound"
+            onclick="toggleSound()"
+            title="Attiva / Disattiva feedback sonoro"
+            class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono border-2 border-black bg-black text-white transition-all cursor-pointer"
+          >
+            <svg id="icon-sound-on" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            </svg>
+            <svg id="icon-sound-off" class="w-3.5 h-3.5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <line x1="23" y1="9" x2="17" y2="15"/>
+              <line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+            <span class="hidden sm:inline">Suono</span>
+          </button>
+
+          <!-- Scale Mode Toggle -->
+          <button
+            type="button"
+            id="btn-toggle-scale"
+            onclick="toggleScale()"
+            title="Alterna scala display"
+            class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono border-2 border-black bg-white text-black hover:bg-neutral-100 transition-all cursor-pointer"
+          >
+            <span id="scale-mode-label" class="hidden sm:inline">100% Nativo</span>
+            <span class="sm:hidden">Zoom</span>
+          </button>
+
+          <!-- Reset -->
+          <button
+            type="button"
+            onclick="goToPage(1)"
+            title="Ricomincia da Pagina 1"
+            class="p-1.5 text-xs border-2 border-black bg-white text-black hover:bg-black hover:text-white transition-colors cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace with Wireframe Blueprint Grid -->
+    <main class="flex-1 w-full flex flex-col items-center justify-center p-4 sm:p-6 wireframe-grid relative">
+      <!-- Technical Corner Labels -->
+      <div class="absolute top-4 left-6 text-[10px] font-mono text-neutral-400 select-none hidden md:block">
+        <span>VIEWPORT: iPHONE 13 MINI // 375 × 812 PT</span>
+      </div>
+      <div class="absolute top-4 right-6 text-[10px] font-mono text-neutral-400 select-none hidden md:block">
+        <span id="scale-indicator">SCALE: 100%</span>
+      </div>
+
+      <!-- iPhone 13 mini Scaled Wrapper -->
+      <div id="phone-scaler" class="transition-transform duration-200 ease-out origin-center my-auto flex items-center justify-center">
+        <!-- Physical iPhone 13 mini Chassis -->
+        <div class="relative select-none">
+          <!-- Top Dimension Annotation -->
+          <div class="hidden md:flex absolute -top-8 left-0 right-0 justify-between items-center px-2 text-[11px] font-mono text-neutral-500">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 border border-black inline-block"></span>
+              <span>W: 375 pt</span>
+            </span>
+            <span class="text-black font-bold uppercase tracking-wider text-xs">
+              iPhone 13 mini
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span>H: 812 pt</span>
+              <span class="w-2 h-2 border border-black inline-block"></span>
+            </span>
+          </div>
+
+          <!-- Physical Hardware Buttons on Outer Edge -->
+          <!-- Silent / Ring Switch (Left) -->
+          <div class="absolute -left-[5px] top-[110px] w-[5px] h-[26px] bg-black border-l border-y border-black rounded-l-[3px]"></div>
+          <!-- Volume Up (Left) -->
+          <div class="absolute -left-[5px] top-[154px] w-[5px] h-[46px] bg-black border-l border-y border-black rounded-l-[3px]"></div>
+          <!-- Volume Down (Left) -->
+          <div class="absolute -left-[5px] top-[214px] w-[5px] h-[46px] bg-black border-l border-y border-black rounded-l-[3px]"></div>
+          <!-- Power / Side Button (Right) -->
+          <div class="absolute -right-[5px] top-[170px] w-[5px] h-[64px] bg-black border-r border-y border-black rounded-r-[3px]"></div>
+
+          <!-- Outer Chassis Border & Bezel -->
+          <div class="relative w-[399px] h-[836px] bg-white border-[3px] border-black rounded-[54px] p-[12px] shadow-[12px_12px_0px_0px_#000]">
+            <!-- Antenna bands -->
+            <div class="absolute top-[80px] -left-[3px] w-[3px] h-[4px] bg-black"></div>
+            <div class="absolute top-[80px] -right-[3px] w-[3px] h-[4px] bg-black"></div>
+            <div class="absolute bottom-[80px] -left-[3px] w-[3px] h-[4px] bg-black"></div>
+            <div class="absolute bottom-[80px] -right-[3px] w-[3px] h-[4px] bg-black"></div>
+
+            <!-- Screen Viewport: Exact 375 × 812 pt -->
+            <div class="relative w-[375px] h-[812px] bg-white border-2 border-black rounded-[42px] overflow-hidden flex flex-col">
+              
+              <!-- iOS Status Bar (iPhone 13 mini style) -->
+              <header class="relative w-full h-[44px] shrink-0 z-30 flex items-center justify-between px-7 pt-1 bg-white select-none pointer-events-none border-b border-black/5">
+                <!-- Clock -->
+                <div class="text-[13px] font-mono font-bold text-black tracking-tight">
+                  09:41
+                </div>
+
+                <!-- Right wireframe icons (Cellular, Wi-Fi, Battery) -->
+                <div class="flex items-center gap-1.5 text-black">
+                  <!-- Cellular Signal 4-bar wireframe -->
+                  <div class="flex items-end gap-[1.5px] h-3">
+                    <div class="w-[2.5px] h-1 bg-black"></div>
+                    <div class="w-[2.5px] h-1.5 bg-black"></div>
+                    <div class="w-[2.5px] h-2 bg-black"></div>
+                    <div class="w-[2.5px] h-2.5 bg-black"></div>
+                  </div>
+
+                  <!-- Wi-Fi wireframe icon -->
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 13a10 10 0 0 1 14 0" />
+                    <path d="M8.5 16.5a5 5 0 0 1 7 0" />
+                    <path d="M12 20h.01" />
+                  </svg>
+
+                  <!-- Battery wireframe icon -->
+                  <div class="flex items-center">
+                    <div class="w-5 h-2.5 border-[1.5px] border-black rounded-[2px] p-[1px] flex items-center">
+                      <div class="w-full h-full bg-black rounded-[0.5px]"></div>
+                    </div>
+                    <div class="w-[1.5px] h-1 bg-black rounded-r-[1px] -ml-[0.5px]"></div>
+                  </div>
+                </div>
+
+                <!-- Characteristic iPhone 13 mini Notch (Narrowed width 146px) -->
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[146px] h-[28px] bg-black rounded-b-[18px] flex items-center justify-center">
+                  <!-- Ear Speaker Slit -->
+                  <div class="w-10 h-1 bg-white/30 rounded-full mb-1"></div>
+                  <!-- Camera dot -->
+                  <div class="absolute right-5 w-2.5 h-2.5 rounded-full border border-white/40 bg-black flex items-center justify-center">
+                    <div class="w-1 h-1 rounded-full bg-white/20"></div>
+                  </div>
+                </div>
+              </header>
+
+              <!-- Main Screen Content Area -->
+              <div id="screen-content" class="relative flex-1 w-full overflow-hidden bg-white">
+                
+                <!-- Optional Technical Alignment Guides -->
+                <div id="wireframe-guides" class="hidden absolute inset-0 pointer-events-none z-20">
+                  <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 border-b border-dashed border-neutral-300"></div>
+                  <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 border-r border-dashed border-neutral-300"></div>
+                  <div class="absolute inset-4 border border-dashed border-neutral-200"></div>
+                  <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-8 text-[9px] font-mono text-neutral-400 bg-white px-1">
+                    (187.5, 406)
+                  </span>
+                </div>
+
+                <!-- PAGINA 1: Completamente vuota, con dentro SOLO il bottone "avanti" -->
+                <section
+                  id="pagina-1"
+                  class="page-container page-active flex flex-col items-center justify-center p-6 bg-white select-none"
+                  aria-label="Pagina 1"
+                >
+                  <!-- Bottone con scritto "avanti" -->
+                  <div class="relative inline-block group">
+                    <!-- Marcatori a croce (+) in stile wireframe architettonico -->
+                    <span class="absolute -top-2 -left-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+                    <span class="absolute -top-2 -right-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+                    <span class="absolute -bottom-2 -left-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+                    <span class="absolute -bottom-2 -right-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+
+                    <button
+                      type="button"
+                      id="btn-avanti"
+                      onclick="goToPage(2)"
+                      class="relative flex items-center justify-center gap-3 w-56 h-14 sm:w-60 sm:h-14 bg-white text-black border-2 border-black font-mono font-bold text-lg tracking-wider shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 active:shadow-none active:translate-x-1 active:translate-y-1 hover:bg-black hover:text-white transition-all duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black cursor-pointer select-none"
+                    >
+                      <span>avanti</span>
+                      <svg class="w-5 h-5 transition-transform duration-150 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </section>
+
+                <!-- PAGINA 2: Completamente vuota, con dentro SOLO il bottone "indietro" -->
+                <section
+                  id="pagina-2"
+                  class="page-container page-hidden-right flex flex-col items-center justify-center p-6 bg-white select-none"
+                  aria-label="Pagina 2"
+                >
+                  <!-- Bottone con scritto "indietro" -->
+                  <div class="relative inline-block group">
+                    <!-- Marcatori a croce (+) in stile wireframe architettonico -->
+                    <span class="absolute -top-2 -left-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+                    <span class="absolute -top-2 -right-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+                    <span class="absolute -bottom-2 -left-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+                    <span class="absolute -bottom-2 -right-2 text-[10px] font-mono text-black select-none pointer-events-none opacity-60">+</span>
+
+                    <button
+                      type="button"
+                      id="btn-indietro"
+                      onclick="goToPage(1)"
+                      class="relative flex items-center justify-center gap-3 w-56 h-14 sm:w-60 sm:h-14 bg-white text-black border-2 border-black font-mono font-bold text-lg tracking-wider shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 active:shadow-none active:translate-x-1 active:translate-y-1 hover:bg-black hover:text-white transition-all duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black cursor-pointer select-none"
+                    >
+                      <svg class="w-5 h-5 transition-transform duration-150 group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                      </svg>
+                      <span>indietro</span>
+                    </button>
+                  </div>
+                </section>
+
+              </div>
+
+              <!-- Home Indicator Bar (Bottom of iPhone) -->
+              <footer class="relative w-full h-[34px] shrink-0 z-30 flex items-center justify-center bg-white pointer-events-none">
+                <div class="w-[134px] h-[4.5px] bg-black rounded-full"></div>
+              </footer>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Status & Keyboard Controls Bar -->
+      <div class="mt-4 sm:mt-6 mb-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-[11px] font-mono text-neutral-600 bg-white border border-neutral-300 px-4 py-2 shadow-sm">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-black inline-block animate-pulse"></span>
+          <span id="status-page-label" class="font-bold text-black uppercase">
+            Stato: Pagina 1 di 2
+          </span>
+        </div>
+
+        <span class="hidden sm:inline text-neutral-300">|</span>
+
+        <div class="flex items-center gap-2">
+          <kbd id="shortcut-key" class="px-1.5 py-0.5 bg-neutral-100 border border-neutral-400 text-black text-[10px]">
+            Invio / →
+          </kbd>
+          <span id="shortcut-text">per andare "avanti"</span>
+        </div>
+
+        <span class="hidden sm:inline text-neutral-300">|</span>
+
+        <span class="text-neutral-500">
+          iPhone 13 mini: 375 × 812 pt
+        </span>
+      </div>
+    </main>
+
+    <!-- Vanilla JavaScript: State, Navigation, Gestures, Audio & Layout -->
+    <script>
+      // State
+      let currentPage = 1;
+      let soundEnabled = true;
+      let showGuides = false;
+      let scaleMode = 'fit'; // 'fit' or 'native'
+      let audioCtx = null;
+
+      // Audio feedback synthesis via Web Audio API (zero external files)
+      function playClickSound(type) {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) {
+            const AudioClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioClass) audioCtx = new AudioClass();
+          }
+          if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          if (!audioCtx) return;
+
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const now = audioCtx.currentTime;
+
+          if (type === 'forward') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(780, now + 0.04);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.05);
+          } else {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(640, now);
+            osc.frequency.exponentialRampToValueAtTime(260, now + 0.045);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.055);
+          }
+        } catch (e) {
+          // Silent fallback
+        }
+      }
+
+      // Page Navigation Handler
+      function goToPage(targetPage) {
+        if (targetPage === currentPage) return;
+
+        const p1 = document.getElementById('pagina-1');
+        const p2 = document.getElementById('pagina-2');
+        const tab1 = document.getElementById('tab-page-1');
+        const tab2 = document.getElementById('tab-page-2');
+        const statusLabel = document.getElementById('status-page-label');
+        const shortcutKey = document.getElementById('shortcut-key');
+        const shortcutText = document.getElementById('shortcut-text');
+
+        if (targetPage === 2) {
+          // Slide forward from Page 1 to Page 2
+          p1.className = 'page-container page-hidden-left flex flex-col items-center justify-center p-6 bg-white select-none';
+          p2.className = 'page-container page-active flex flex-col items-center justify-center p-6 bg-white select-none';
+          
+          tab1.className = 'px-3 py-1 text-xs font-mono font-bold transition-colors cursor-pointer text-black hover:bg-neutral-200';
+          tab2.className = 'px-3 py-1 text-xs font-mono font-bold transition-colors cursor-pointer bg-black text-white';
+
+          statusLabel.textContent = 'Stato: Pagina 2 di 2';
+          shortcutKey.textContent = 'Esc / ← / Backspace';
+          shortcutText.textContent = 'per andare "indietro"';
+
+          playClickSound('forward');
+          currentPage = 2;
+        } else {
+          // Slide backward from Page 2 to Page 1
+          p2.className = 'page-container page-hidden-right flex flex-col items-center justify-center p-6 bg-white select-none';
+          p1.className = 'page-container page-active flex flex-col items-center justify-center p-6 bg-white select-none';
+
+          tab2.className = 'px-3 py-1 text-xs font-mono font-bold transition-colors cursor-pointer text-black hover:bg-neutral-200';
+          tab1.className = 'px-3 py-1 text-xs font-mono font-bold transition-colors cursor-pointer bg-black text-white';
+
+          statusLabel.textContent = 'Stato: Pagina 1 di 2';
+          shortcutKey.textContent = 'Invio / →';
+          shortcutText.textContent = 'per andare "avanti"';
+
+          playClickSound('backward');
+          currentPage = 1;
+        }
+      }
+
+      // Toggle Alignment Guides
+      function toggleGuides() {
+        showGuides = !showGuides;
+        const guidesEl = document.getElementById('wireframe-guides');
+        const btnGuides = document.getElementById('btn-toggle-guides');
+        if (showGuides) {
+          guidesEl.classList.remove('hidden');
+          btnGuides.classList.remove('bg-white', 'text-black');
+          btnGuides.classList.add('bg-black', 'text-white');
+        } else {
+          guidesEl.classList.add('hidden');
+          btnGuides.classList.remove('bg-black', 'text-white');
+          btnGuides.classList.add('bg-white', 'text-black');
+        }
+      }
+
+      // Toggle Sound Effects
+      function toggleSound() {
+        soundEnabled = !soundEnabled;
+        const iconOn = document.getElementById('icon-sound-on');
+        const iconOff = document.getElementById('icon-sound-off');
+        const btnSound = document.getElementById('btn-toggle-sound');
+
+        if (soundEnabled) {
+          iconOn.classList.remove('hidden');
+          iconOff.classList.add('hidden');
+          btnSound.classList.remove('bg-white', 'text-black');
+          btnSound.classList.add('bg-black', 'text-white');
+        } else {
+          iconOn.classList.add('hidden');
+          iconOff.classList.remove('hidden');
+          btnSound.classList.remove('bg-black', 'text-white');
+          btnSound.classList.add('bg-white', 'text-black');
+        }
+      }
+
+      // Toggle Scale Mode (Fit vs 100% Native)
+      function toggleScale() {
+        scaleMode = scaleMode === 'fit' ? 'native' : 'fit';
+        const label = document.getElementById('scale-mode-label');
+        label.textContent = scaleMode === 'fit' ? '100% Nativo' : 'Adatta';
+        updateScale();
+      }
+
+      // Auto-compute Scale Factor
+      function updateScale() {
+        const phoneScaler = document.getElementById('phone-scaler');
+        const scaleIndicator = document.getElementById('scale-indicator');
+
+        if (scaleMode === 'native') {
+          phoneScaler.style.transform = 'scale(1)';
+          if (scaleIndicator) scaleIndicator.textContent = 'SCALE: 100%';
+          return;
+        }
+
+        const availableHeight = window.innerHeight - 150;
+        const availableWidth = window.innerWidth - 32;
+
+        const scaleH = availableHeight / 860;
+        const scaleW = availableWidth / 440;
+
+        const fit = Math.min(scaleH, scaleW, 1.0);
+        const finalScale = Math.max(0.55, fit);
+
+        phoneScaler.style.transform = `scale(${finalScale})`;
+        if (scaleIndicator) {
+          scaleIndicator.textContent = `SCALE: ${Math.round(finalScale * 100)}%`;
+        }
+      }
+
+      // Keyboard navigation
+      window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
+
+        if (currentPage === 1) {
+          if (e.key === 'ArrowRight' || e.key === 'Enter') {
+            e.preventDefault();
+            goToPage(2);
+          }
+        } else if (currentPage === 2) {
+          if (e.key === 'ArrowLeft' || e.key === 'Escape' || e.key === 'Backspace') {
+            e.preventDefault();
+            goToPage(1);
+          }
+        }
+      });
+
+      // Window resize listener
+      window.addEventListener('resize', updateScale);
+
+      // Initial scale calculation on load
+      window.addEventListener('DOMContentLoaded', updateScale);
+      updateScale();
+    </script>
   </body>
 </html>
-
